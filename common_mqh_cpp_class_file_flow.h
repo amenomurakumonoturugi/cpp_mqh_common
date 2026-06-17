@@ -8,6 +8,8 @@ class COMPOSITION_FILE_FLOW {
 
 protected:
 
+#ifdef __CPP__
+
 	ulong Common_Log_Flow(const string& full_path, const ulong& error, const uint& line, const bool& error_type,LOG_MANAGER_BASE& log_mng) {
 
 		LARGE_INTEGER Large = {};
@@ -50,10 +52,14 @@ protected:
 		return ERROR_SUCCESS;
 	}
 
+#endif
+
 	ulong Common_Creaate_Root(FILE_MANAGER_BASE& file_mng, const string& file_name, string& result_drc) {
 
 		FIND_DATAW Find_Data = {};
-		string Drc = NULL_STRING;
+
+		string Drc;
+		StringAssign(Drc, NULL_STRING);
 
 		ulong Error_Code = file_mng.Get_Main_Directory(Drc);
 
@@ -69,10 +75,10 @@ protected:
 			return Error_Code;
 		}
 
-		MQH_STRING_VECTOR Array;
+		_vector<string> Array;
 		int Array_Size = (int)file_mng.Get_Root(file_name, Array);
 
-		Error_Code = file_mng.Create_Root(Array.data, Drc, Array_Size);
+		Error_Code = file_mng.Create_Root(Array, Drc, Array_Size);
 
 		if (Error_Code != ERROR_SUCCESS)
 			return Error_Code;
@@ -98,7 +104,7 @@ protected:
 					SYSTEM_ERROR_VALUE::Set_System_Error(
 
 						CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_ROOT_DRC),
-						__GetWin32LastError(),
+						_GetWin32LastError(),
 						__LINE__,
 						__FILEW__
 					);
@@ -120,13 +126,13 @@ protected:
 			}
 		}
 
-		result_drc = Drc;
+		StringAssign(result_drc, Drc);
 
 		return ERROR_SUCCESS;
 
 	}
 
-	inline ulong Common_Open_File(FILE_MANAGER_BASE& file_mng, const string file_name, LARGE_INTEGER& result_file_size) {
+	inline ulong Common_Open_File(FILE_MANAGER_BASE& file_mng, const string& file_name, LARGE_INTEGER& result_file_size) {
 
 		ulong Error_Code = ERROR_SUCCESS;
 
@@ -137,7 +143,7 @@ protected:
 			SYSTEM_ERROR_VALUE::Set_System_Error(
 
 				CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_OPEN_FILE),
-				__GetWin32LastError(),
+				_GetWin32LastError(),
 				__LINE__,
 				__FILEW__
 			);
@@ -148,14 +154,21 @@ protected:
 
 		else {
 
-			ulong Open_Attribute = __GetWin32LastError();
+			ulong Open_Attribute = _GetWin32LastError();
 
 			Error_Code = file_mng.Get_File_Size(file_mng.File_Handle.get(), result_file_size);
 
 			if (Error_Code != ERROR_SUCCESS)
 				return Error_Code;
 
-			Error_Code = file_mng.Lock_Mng.Try_Lock_File(file_mng.File_Handle.get(), result_file_size.QuadPart);
+			ulong File_Size;
+
+			Error_Code = file_mng.Lock_Mng.Exchange_File_Size(result_file_size.QuadPart, File_Size);
+
+			if (Error_Code != ERROR_SUCCESS)
+				return Error_Code;
+
+			Error_Code = file_mng.Lock_Mng.Try_Lock_File(file_mng.File_Handle.get(), File_Size);
 
 			if (Error_Code != ERROR_SUCCESS)
 				return Error_Code;
@@ -181,13 +194,14 @@ public:
 			return Error_Code;
 		}
 
-		string File_Drc = NULL_STRING;
+		string File_Drc;
+		StringAssign(File_Drc, NULL_STRING);
 
 		Error_Code = Common_Creaate_Root(file_mng, file_name, File_Drc);
 
 		LARGE_INTEGER P_Large = {};
 
-		MQH_STRING_VECTOR Array;
+		_vector<string> Array;
 
 		Error_Code = Common_Open_File(file_mng, File_Drc, P_Large);
 
@@ -229,13 +243,14 @@ public:
 			return Error_Code;
 		}
 
-		string File_Drc = NULL_STRING;
+		string File_Drc;
+		StringAssign(File_Drc, NULL_STRING);
 
 		Error_Code = Common_Creaate_Root(file_mng, file_name, File_Drc);
 
 		LARGE_INTEGER P_Large = {};
 
-		MQH_STRING_VECTOR Array;
+		_vector<string> Array;
 
 		Error_Code = Common_Open_File(file_mng, File_Drc, P_Large);
 

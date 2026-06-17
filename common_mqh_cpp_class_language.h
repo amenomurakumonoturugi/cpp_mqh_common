@@ -14,17 +14,17 @@ public:
 
 	inline void Set_Lang_Num(const string& Lang) {
 
-		if (Lang == TERMINAL_LANGUAGE_JP)
+		if (Lang == TERMINAL_LANGUAGE_JP())
 			Lang_Num = JP;
 
-		else if (Lang == TERMINAL_LANGUAGE_EN)
+		else if (Lang == TERMINAL_LANGUAGE_EN())
 			Lang_Num = EN;
 
 		else
 			Lang_Num = OTHERS;
 	}
 
-	inline ulong Get_Lang_Num() {
+	inline ulong Get_Lang_Num() const {
 
 		return (ulong)Lang_Num;
 	}

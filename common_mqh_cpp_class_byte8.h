@@ -4,7 +4,7 @@ class BYTE8_FILE_MANAGER :public FILE_MANAGER_BASE {
 
 private:
 
-#ifdef COMPILER_FOO_CPP
+#ifdef __CPP__
 
 #pragma pack(1)
 	struct BINARY_DATA {
@@ -14,7 +14,7 @@ private:
 
 #endif
 
-#ifdef COMPILER_FOO_MQH5
+#ifdef __MQL5__
 
 	struct BINARY_DATA  pack(1) {
 
@@ -29,9 +29,18 @@ private:
 		BINARY_DATA Binary;
 	};
 
-	DATA_TYPE_BIT_MAP Data = {};
+	DATA_TYPE_BIT_MAP Data;
 
 public:
+
+	BYTE8_FILE_MANAGER() {
+
+#ifdef __CPP__
+
+		Data = {};
+#endif
+
+	}
 
 	~BYTE8_FILE_MANAGER() {
 
@@ -40,19 +49,19 @@ public:
 			SYSTEM_ERROR_VALUE::Set_System_Error(
 
 				CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_FILE_UNLOCK),
-				__GetWin32LastError(),
+				_GetWin32LastError(),
 				__LINE__,
 				__FILEW__
 			);
 		}
 	}
 
-	inline void Set_File_Handle(const HANDLE& handle) {
+	inline void Set_File_Handle(const HANDLE handle) {
 
 		File_Handle.Set(handle);
 	}
 
-	inline ulong Get_Read_Data() {
+	inline ulong Get_Read_Data() const {
 
 		return Data.Value;
 	}
@@ -62,16 +71,16 @@ public:
 		Data.Value = data;
 	}
 
-	virtual ulong File_Initialization(const HANDLE& handle) override {
+	virtual ulong File_Initialization(const HANDLE handle) override {
 
 		LARGE_INTEGER Move_P = {}, Result_P = {};
 
-		if (!__SetFilePointerEx(handle, Move_P, Result_P, FILE_BEGIN)) {
+		if (!_SetFilePointerEx(handle, Move_P, Result_P, FILE_BEGIN)) {
 
 			SYSTEM_ERROR_VALUE::Set_System_Error(
 				
 				CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_FILE_INIT),
-				__GetWin32LastError(),
+				_GetWin32LastError(),
 				__LINE__,
 				__FILEW__
 			);
@@ -106,43 +115,45 @@ public:
 		}
 	}
 
-	virtual ulong Get_Root(const string& file_name, MQH_STRING_VECTOR& result) override {
+	virtual ulong Get_Root(const string& file_name, _vector<string>& result) override {
 
-		int Count = 0;
+		if (file_name == ITEM_ERR_MS_ERR_FILE_NAME()) {
 
-		if (file_name == ITEM_ERR_MS_ERR_FILE_NAME)
-			Count = ERROR_ROOT_COUNT;
-
-		if (file_name == ITEM_ERR_MS_VISIBLE_ERR_NUM_FILE_NAME)
-			Count = VIS_ROOT_COUNT;
-
-		if (file_name == ITEM_LANGUAGE_FILE_NAME)
-			Count = LANG_ROOT_COUNT;
-
-		for (int i = 0; i < Count; i++) {
-
-			if (file_name == ITEM_ERR_MS_ERR_FILE_NAME)
-				result.push_back(FIND_ROOT_STRING_ERROR[i]);
-
-			if (file_name == ITEM_ERR_MS_VISIBLE_ERR_NUM_FILE_NAME)
-				result.push_back(FIND_ROOT_STRING_VIS[i]);
-
-			if (file_name == ITEM_LANGUAGE_FILE_NAME)
-				result.push_back(FIND_ROOT_STRING_LANG[i]);
+			result.push_back(MAKER_FOLDER_DRC());
+			result.push_back(ITEM_FOLDER_DRC());
+			result.push_back(ITEM_ERR_MS_FOLDER_DRC());
+			result.push_back(ITEM_ERR_MS_FILES_FOLDER_DRC());
+			result.push_back(ITEM_ERR_MS_ERR_FILE_DRC());
 		}
 
+		if (file_name == ITEM_ERR_MS_VISIBLE_ERR_NUM_FILE_NAME()) {
+
+			result.push_back(MAKER_FOLDER_DRC());
+			result.push_back(ITEM_FOLDER_DRC());
+			result.push_back(ITEM_ERR_MS_FOLDER_DRC());
+			result.push_back(ITEM_ERR_MS_FILES_FOLDER_DRC());
+			result.push_back(ITEM_ERR_MS_VISIBLE_FILE_DRC());
+		}
+
+		if (file_name == ITEM_LANGUAGE_FILE_NAME()) {
+
+			result.push_back(MAKER_FOLDER_DRC());
+			result.push_back(ITEM_FOLDER_DRC());
+			result.push_back(ITEM_LANGUAGE_FOLDER_DRC());
+		};
+		
 		return (uint)result.size();
 	}
 
 	virtual ulong Get_Main_Directory(string& result) override {
 
-#ifdef COMPILER_FOO_CPP
+#ifdef __CPP__
 
 		PWSTR path = nullptr;
 
 		if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &path))) {
 
-			result = path;
+			StringAssign(result, path);
 			CoTaskMemFree(path);
 
 			return ERROR_SUCCESS;
@@ -163,7 +174,7 @@ public:
 
 #endif
 
-#ifdef COMPILER_FOO_MQH5
+#ifdef __MQL5__
 
 		string Data_Path = TerminalInfoString(TERMINAL_DATA_PATH);
 
@@ -171,18 +182,13 @@ public:
 
 		if (Result_Num == -1) {
 
-			ulong Error = CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_GET_LOCAL_APP_DRC);
-			ulong Vis = CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_GET_LOCAL_APP_DRC);
-			uint Line = __LINE__;
+			SYSTEM_ERROR_VALUE::Set_System_Error(
 
-			string File_Name;
-
-			ulong Error_Code = Get_File_Name(CPP_MQH_FILE, File_Name);
-
-			if (Error_Code != ERROR_SUCCESS)
-				return Error_Code;
-
-			Set_System_Error(Error, Vis, Line, File_Name);
+				CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_GET_LOCAL_APP_DRC),
+				CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_GET_LOCAL_APP_DRC),
+				__LINE__,
+				__FILEW__
+			);
 
 
 			return CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_GET_LOCAL_APP_DRC);
@@ -194,19 +200,13 @@ public:
 
 			if (result == NULL_STRING) {
 
-				ulong Error = CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_GET_LOCAL_APP_DRC);
-				ulong Vis = CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_GET_LOCAL_APP_DRC);
-				uint Line = __LINE__;
+				SYSTEM_ERROR_VALUE::Set_System_Error(
 
-				string File_Name;
-
-				ulong Error_Code = Get_File_Name(CPP_MQH_FILE, File_Name);
-
-				if (Error_Code != ERROR_SUCCESS)
-					return Error_Code;
-
-				Set_System_Error(Error, Vis, Line, File_Name);
-
+					CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_GET_LOCAL_APP_DRC),
+					CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_GET_LOCAL_APP_DRC),
+					__LINE__,
+					__FILEW__
+				);
 
 				return CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_GET_LOCAL_APP_DRC);
 			}
@@ -217,19 +217,13 @@ public:
 
 				if (!StringAdd(result, App_Data_Drc)) {
 
-					ulong Error = CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_GET_LOCAL_APP_DRC);
-					ulong Vis = CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_GET_LOCAL_APP_DRC);
-					uint Line = __LINE__;
+					SYSTEM_ERROR_VALUE::Set_System_Error(
 
-					string File_Name;
-
-					ulong Error_Code = Get_File_Name(CPP_MQH_FILE, File_Name);
-
-					if (Error_Code != ERROR_SUCCESS)
-						return Error_Code;
-
-					Set_System_Error(Error, Vis, Line, File_Name);
-
+						CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_GET_LOCAL_APP_DRC),
+						CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_GET_LOCAL_APP_DRC),
+						__LINE__,
+						__FILEW__
+					);
 
 					return CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_GET_LOCAL_APP_DRC);
 				}
@@ -243,16 +237,16 @@ public:
 #endif
 	}
 
-	virtual inline ulong File_Write(const HANDLE& file_handle) override {
+	virtual inline ulong File_Write(const HANDLE file_handle) override {
 
 		DWORD Write_Size = 0;
-		OVERLAPPED  Ov_L = {};
+		OVERLAPPED Ov_L = {};
 
 		Data.Binary = std::bit_cast<BINARY_DATA, ulong>(Data.Value);
 
-		if (!__WriteFile(file_handle, Data.Binary, sizeof(Data.Value), Write_Size, Ov_L)) {
+		if (!_WriteFile(file_handle, Data.Binary.Value, sizeof(Data.Value), Write_Size, Ov_L)) {
 
-			if (__GetWin32LastError() == ERROR_IO_PENDING) {
+			if (_GetWin32LastError() == ERROR_IO_PENDING) {
 
 				return ERROR_SUCCESS;
 			}
@@ -262,7 +256,7 @@ public:
 				SYSTEM_ERROR_VALUE::Set_System_Error(
 
 					CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_FILE_WRITE),
-					__GetWin32LastError(),
+					_GetWin32LastError(),
 					__LINE__,
 					__FILEW__
 				);
@@ -290,14 +284,14 @@ public:
 		}
 	}
 
-	virtual inline ulong File_Read(const HANDLE& file_handle) override {
+	virtual inline ulong File_Read(const HANDLE file_handle) override {
 
 		DWORD Read_Size = 0;
 		OVERLAPPED Ov_L = {};
 
-		if (!__ReadFile(file_handle, Data.Binary, sizeof(Data.Value), Read_Size, Ov_L)) {
+		if (!_ReadFile(file_handle, Data.Binary.Value, sizeof(Data.Value), Read_Size, Ov_L)) {
 
-			if (__GetWin32LastError() == ERROR_IO_PENDING) {
+			if (_GetWin32LastError() == ERROR_IO_PENDING) {
 
 				return ERROR_SUCCESS;
 			}
@@ -307,7 +301,7 @@ public:
 				SYSTEM_ERROR_VALUE::Set_System_Error(
 
 					CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_FILE_READ),
-					__GetWin32LastError(),
+					_GetWin32LastError(),
 					__LINE__,
 					__FILEW__
 				);
@@ -341,12 +335,12 @@ public:
 
 		LARGE_INTEGER Move_P = {}, result_P = {};
 
-		if (!__SetFilePointerEx(File_Handle.get(), Move_P, result_P, FILE_BEGIN)) {
+		if (!_SetFilePointerEx(File_Handle.get(), Move_P, result_P, FILE_BEGIN)) {
 
 			SYSTEM_ERROR_VALUE::Set_System_Error(
 
 				CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_FILE_POINTER_SET),
-				__GetWin32LastError(),
+				_GetWin32LastError(),
 				__LINE__,
 				__FILEW__
 			);
@@ -364,12 +358,12 @@ public:
 
 		FILETIME Create = {}, Access = {}, Write = {};
 
-		if (!__GetFileTime(File_Handle.get(), Create, Access, Write)) {
+		if (!_GetFileTime(File_Handle.get(), Create, Access, Write)) {
 
 			SYSTEM_ERROR_VALUE::Set_System_Error(
 
 				CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_GET_FILE_TIME),
-				__GetWin32LastError(),
+				_GetWin32LastError(),
 				__LINE__,
 				__FILEW__
 			);

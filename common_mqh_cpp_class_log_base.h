@@ -4,22 +4,24 @@
 
 #define COMMON_CLASS_LOG_BASE_H
 
+#ifdef __CPP__
+
 class LOG_MANAGER_BASE : public FILE_MANAGER_BASE {
 
 protected:
 
 	struct LOG_FILE_ENTRY {
 
-		string Full_Path;
+		wchar_t* Full_Path;
 
-		WIN32_FIND_DATAW Find_Data;
+		FIND_DATAW Find_Data;
 	};
 
 	string Log_Data;
 
 	LOG_MANAGER_BASE() {
 
-		Log_Data = NULL_STRING;
+		StringAssign(Log_Data, NULL_STRING);
 	}
 
 	ulong Get_Current_Time(std::tm& result, WORD& milli_sec) {
@@ -42,12 +44,14 @@ protected:
 
 	ulong Get_Directory_Total_Size(const string& dir_path, ulong& total_result) {
 
-		WIN32_FIND_DATAW Find_Data = {};
+		FIND_DATAW Find_Data = {};
 
-		string Search_Path = dir_path;
+		string Search_Path;
+		StringAssign(Search_Path, dir_path);
+
 		Search_Path.append(u"\\*");
 
-		HANDLE h_Find = __FindFirstFileW(Search_Path, Find_Data);
+		HANDLE h_Find = _FindFirstFileW(Search_Path, Find_Data);
 
 		if (h_Find == INVALID_HANDLE_VALUE)
 			return ERROR_SUCCESS;
@@ -59,7 +63,9 @@ protected:
 			if (Name == u"." || Name == u"..")
 				continue;
 
-			string Full_Path = dir_path;
+			string Full_Path;
+			StringAssign(Full_Path, dir_path);
+
 			Full_Path.append(u"\\");
 			Full_Path.append(Find_Data.cFileName);
 
@@ -102,7 +108,7 @@ protected:
 			MUTEX_SYSTEM_ERROR_VALUE::Set_System_Error(
 
 				CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_FILE_DELETE),
-				__GetWin32LastError(),
+				_GetWin32LastError(),
 				__LINE__,
 				__FILEW__
 			);
@@ -114,13 +120,14 @@ protected:
 
 	ulong Collect_Old_Logs(const string& drc, std::vector<LOG_FILE_ENTRY>& list) {
 
-		WIN32_FIND_DATAW Find_Data = {};
+		FIND_DATAW Find_Data = {};
 
-		string Search_Path = drc;
+		string Search_Path;
+		StringAssign(Search_Path, drc);
 
 		Search_Path.append(u"\\*");
 
-		HANDLE h_Find = __FindFirstFileW(Search_Path, Find_Data);
+		HANDLE h_Find = _FindFirstFileW(Search_Path, Find_Data);
 
 		if (h_Find == INVALID_HANDLE_VALUE)
 			return ERROR_SUCCESS;
@@ -132,7 +139,8 @@ protected:
 			if (name == L"." || name == L"..")
 				continue;
 
-			string Full_Path = drc;
+			string Full_Path;
+			StringAssign(Full_Path, drc);
 
 			Full_Path.append(u"\\");
 			Full_Path.append(Find_Data.cFileName);
@@ -224,19 +232,18 @@ public:
 			Current_Time.tm_mon + 1,
 			Current_Time.tm_mday);
 
-		result = Buf;
+		StringAssign(result, Buf);
 
 		return ERROR_SUCCESS;
 	}
 
-	virtual inline ulong File_Write(const HANDLE& file_handle) override {
+	virtual inline ulong File_Write(const HANDLE file_handle) override {
 
 		DWORD Write_Size = 0;
-		OVERLAPPED Ov_L = {};
 
-		if (!__WriteFile(file_handle, Log_Data, (DWORD)Log_Data.size() * sizeof(wchar_t), Write_Size, Ov_L)) {
+		if (!_WriteFile(file_handle, Log_Data, (DWORD)Log_Data.size() * sizeof(wchar_t), Write_Size, NULL)) {
 
-			if (__GetWin32LastError() == ERROR_IO_PENDING) {
+			if (_GetWin32LastError() == ERROR_IO_PENDING) {
 
 				return ERROR_SUCCESS;
 			}
@@ -246,7 +253,7 @@ public:
 				MUTEX_SYSTEM_ERROR_VALUE::Set_System_Error(
 
 					CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_FILE_WRITE),
-					__GetWin32LastError(),
+					_GetWin32LastError(),
 					__LINE__,
 					__FILEW__
 				);
@@ -278,12 +285,12 @@ public:
 
 		LARGE_INTEGER Move_P = {}, result_P = {};
 
-		if (__SetFilePointerEx(file_handle, Move_P, result_P, FILE_END) == INVALID_SET_FILE_POINTER) {
+		if (_SetFilePointerEx(file_handle, Move_P, result_P, FILE_END) == INVALID_SET_FILE_POINTER) {
 
 			MUTEX_SYSTEM_ERROR_VALUE::Set_System_Error(
 
 				CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_FILE_POINTER_SET),
-				__GetWin32LastError(),
+				_GetWin32LastError(),
 				__LINE__,
 				__FILEW__
 			);
@@ -296,8 +303,10 @@ public:
 
 	void Reset_Log_Data() {
 
-		Log_Data = NULL_STRING;
+		StringAssign(Log_Data, NULL_STRING);
 	}
 };
+
+#endif
 
 #endif

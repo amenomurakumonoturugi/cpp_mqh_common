@@ -21,7 +21,7 @@ private:
 		return (uint32_t)(file_data >> 32);
 	}
 
-	bool Get_Now_File_Lock() {
+	bool Get_Now_File_Lock() const {
 
 		return If_Lock;
 	}
@@ -38,12 +38,12 @@ private:
 		uint LockLow = FILE_LOCK_MASK_LOW(byte_size);
 		uint LockHigh = FILE_LOCK_MASK_HIGH(byte_size);
 
-		if (!__LockFileEx(file_handle, LOCKFILE_EXCLUSIVE_LOCK, 0, LockLow, LockHigh, Ov_R)) {
+		if (!_LockFileEx(file_handle, LOCKFILE_EXCLUSIVE_LOCK, 0, LockLow, LockHigh, Ov_R)) {
 
 			SYSTEM_ERROR_VALUE::Set_System_Error(
 
 				CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_FILE_LOCK),
-				__GetWin32LastError(),
+				_GetWin32LastError(),
 				__LINE__,
 				__FILEW__
 			);
@@ -68,6 +68,39 @@ public:
 		Byte_Size = 0;
 	}
 
+#ifdef __MQL5__
+#define LOCK_MNG_FILE_SIZE_TYPE long
+#endif
+
+#ifdef __CPP__
+#define LOCK_MNG_FILE_SIZE_TYPE ulong
+#endif
+
+	ulong Exchange_File_Size(const LOCK_MNG_FILE_SIZE_TYPE& value, ulong& result) {
+
+		if (value < 0) {
+
+			SYSTEM_ERROR_VALUE::Set_System_Error(
+
+				CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_FILE_LOCK),
+				CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_FILE_LOCK),
+				__LINE__,
+				__FILEW__
+			);
+
+			return CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_FILE_LOCK);
+		}
+
+		else {
+
+			result = (ulong)value;
+
+			return ERROR_SUCCESS;
+		}
+	}
+
+#undef LOCK_MNG_FILE_SIZE_TYPE
+
 	ulong File_Lock_Only_1() {
 
 		if (Get_Now_File_Lock()) {
@@ -89,7 +122,7 @@ public:
 		}
 	}
 
-	inline ulong Unlock_File(const HANDLE& file_handle) {
+	inline ulong Unlock_File(const HANDLE file_handle) {
 
 		OVERLAPPED Ov_R = {};
 		uint LockLow = FILE_LOCK_MASK_LOW(Byte_Size);
@@ -97,9 +130,9 @@ public:
 
 		if (Get_Now_File_Lock()) {
 
-			if (!__UnlockFileEx(file_handle, 0, LockLow, LockHigh, Ov_R)) {
+			if (!_UnlockFileEx(file_handle, 0, LockLow, LockHigh, Ov_R)) {
 
-				if (__GetWin32LastError() == ERROR_NOT_LOCKED)
+				if (_GetWin32LastError() == ERROR_NOT_LOCKED)
 					return ERROR_SUCCESS;
 
 				else {
@@ -107,7 +140,7 @@ public:
 					SYSTEM_ERROR_VALUE::Set_System_Error(
 
 						CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_FILE_UNLOCK),
-						__GetWin32LastError(),
+						_GetWin32LastError(),
 						__LINE__,
 						__FILEW__
 					);
@@ -128,7 +161,7 @@ public:
 			return ERROR_SUCCESS;
 	}
 
-	inline ulong Try_Lock_File(const HANDLE& file_handle, const ulong& byte_size) {
+	inline ulong Try_Lock_File(const HANDLE file_handle, const ulong& byte_size) {
 
 		ulong result = 0;
 

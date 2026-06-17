@@ -8,7 +8,7 @@ class PROCESS_MANAGER {
 
 private:
 
-#ifdef COMPILER_FOO_CPP
+#ifdef __CPP__
 
 	bool Get_Mutex(const string& mutex_name, DWORD milli_second) {
 
@@ -34,39 +34,35 @@ private:
 
 #endif
 
-	string Get_Command_Line_Norm(const string& source) {
+	void Get_Command_Line_Norm(const string& source,string& result) {
 
-		string result = COMMAND_LINE_ESCAPE;
+		StringAssign(result, COMMAND_LINE_ESCAPE);
 
 		StringAdd(result, source);
 		StringAdd(result, COMMAND_LINE_ESCAPE);
-
-		return result;
 	}
 
-	string Get_File_Drc(MQH_ARRAY_ARG(string, drc_array), const uint& count, const string& file_name) {
+	void Get_File_Drc(_vector<string>& drc_array, const uint count, const string file_name, string& result) {
 
-		string result = NULL_STRING;
+		StringAssign(result, NULL_STRING);
 
 		for (uint i = 0; i < count; i++)
-			StringAdd(result, drc_array[i]);
+			StringAdd(result, drc_array.Get_At(i));
 
 		StringAdd(result, file_name);
-
-		return result;
 	}
 
 	ulong Proccess_Boot_File_Exist(const string& drc) {
 
 		FIND_DATAW Data = {};
-		HANDLE Handle = __FindFirstFileW(drc, Data);
+		HANDLE Drc_Handle = _FindFirstFileW(drc, Data);
 
-		if (Handle == INVALID_HANDLE_VALUE) {
+		if (Drc_Handle == INVALID_HANDLE_VALUE) {
 
 			SYSTEM_ERROR_VALUE::Set_System_Error(
 
 				CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_APP_EXIST),
-				__GetWin32LastError(),
+				_GetWin32LastError(),
 				__LINE__,
 				__FILEW__
 			);
@@ -76,7 +72,7 @@ private:
 
 		else {
 
-			FindClose(Handle);
+			FindClose(Drc_Handle);
 
 			return ERROR_SUCCESS;
 		}
@@ -84,10 +80,10 @@ private:
 
 	ulong Create_Proccess(
 
-		const string app_name,
-		string       command_line,
+		const string&   app_name,
+		string&         command_line,
 		const uint32_t& creation_flags,
-		const string current_directory) {
+		const string&   current_directory) {
 
 		SECURITY_ATTRIBUTES Proccess = {}, Thread = {};
 		PVOID Environment = NULL;
@@ -98,7 +94,7 @@ private:
 
 		Startup_Info.cb = sizeof(Startup_Info);
 
-		if (__CreateProcessW(
+		if (_CreateProcessW(
 
 			app_name,
 			command_line,
@@ -124,7 +120,7 @@ private:
 			SYSTEM_ERROR_VALUE::Set_System_Error(
 
 				CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_APP_BOOT),
-				__GetWin32LastError(),
+				_GetWin32LastError(),
 				__LINE__,
 				__FILEW__
 			);
@@ -135,17 +131,17 @@ private:
 
 public:
 
-#ifdef COMPILER_FOO_MQH5
+#ifdef __MQL5__
 
 	SAFE_HANDLE Handle;
 
 #endif
 
-#ifdef COMPILER_FOO_CPP
+#ifdef __CPP__
 
 	SAFE_MUTEX_HANDLE Handle;
 
-	ulong Get_Command_Line(MQH_STRING_VECTOR& result) {
+	ulong Get_Command_Line(_vector<string>& result) {
 
 
 		LPWSTR Full_Cmd_Line = GetCommandLineW();
@@ -217,9 +213,16 @@ public:
 
 	ulong Err_Ms_Boot(const string& app_name, const string& file_name, const double& version, const uint& line, const string current_drc) {
 
-		uint Count = ERR_MS_ROOT_COUNT;
+		string Exe_Name, Command_Line;
 
-		string Exe_Name = Get_File_Drc(FIND_ROOT_STRING_ERR_MS, Count, ITEM_ERR_MS_EXE_NAME);
+		_vector<string> Drc_Buf;
+
+		Drc_Buf.push_back(EXE_FOLDER_DRC());
+		Drc_Buf.push_back(MAKER_FOLDER_DRC());
+		Drc_Buf.push_back(ITEM_FOLDER_DRC());
+		Drc_Buf.push_back(ITEM_ERR_MS_FOLDER_DRC());
+		
+		Get_File_Drc(Drc_Buf, Drc_Buf.size(), ITEM_ERR_MS_EXE_NAME(), Exe_Name);
 
 		ulong Error_Code = Proccess_Boot_File_Exist(Exe_Name);
 
@@ -228,19 +231,28 @@ public:
 
 		uint32_t Frag = DETACHED_PROCESS | HIGH_PRIORITY_CLASS;
 
+		Create_Command_Line(Exe_Name, app_name, file_name, version, line, Command_Line);
+
 		return Create_Proccess(
 
 			Exe_Name,
-			Create_Command_Line(Exe_Name, app_name, file_name, version, line),
+			Command_Line,
 			Frag,
 			current_drc);
 	}
 
 	ulong Log_Mng_Boot(const string& app_name, const string& file_name, const double& version, const uint& line, const string current_drc) {
 
-		uint Count = LOG_MNG_ROOT_COUNT;
+		string Exe_Name, Command_Line;
 
-		string Exe_Name = Get_File_Drc(FIND_ROOT_STRING_LOG_MNG, Count, ITEM_LOG_MNG_EXE_NAME);
+		_vector<string> Drc_Buf;
+
+		Drc_Buf.push_back(EXE_FOLDER_DRC());
+		Drc_Buf.push_back(MAKER_FOLDER_DRC());
+		Drc_Buf.push_back(ITEM_FOLDER_DRC());
+		Drc_Buf.push_back(ITEM_LOG_FOLDER_DRC());
+		
+		Get_File_Drc(Drc_Buf, Drc_Buf.size(), ITEM_LOG_MNG_EXE_NAME(), Exe_Name);
 
 		ulong Error_Code = Proccess_Boot_File_Exist(Exe_Name);
 
@@ -249,38 +261,50 @@ public:
 
 		uint32_t Frag = DETACHED_PROCESS | HIGH_PRIORITY_CLASS;
 
+		Create_Command_Line(Exe_Name, app_name, file_name, version, line, Command_Line);
+
 		return Create_Proccess(
 
 			Exe_Name,
-			Create_Command_Line(Exe_Name, app_name, file_name, version, line),
+			Command_Line,
 			Frag,
 			current_drc);
 	}
 
-	string Create_Command_Line(const string& exe_app, const string& call_app, const string& file_name, const double& version, const uint& line) {
+	void Create_Command_Line(const string& exe_app, const string& call_app, const string& file_name, const double& version, const uint& line,string& result) {
 
-		string result = NULL_STRING;
+		StringAssign(result, NULL_STRING);
 
-		StringAdd(result, Get_Command_Line_Norm(exe_app));
+		string Buf;
+
+		Get_Command_Line_Norm(exe_app, Buf);
+
+		StringAdd(result, Buf);
 		StringAdd(result, SPACE_STRING);
 
-		StringAdd(result, Get_Command_Line_Norm(call_app));
+		Get_Command_Line_Norm(call_app, Buf);
+
+		StringAdd(result, Buf);
 		StringAdd(result, SPACE_STRING);
 
-		StringAdd(result, Get_Command_Line_Norm(file_name));
+		Get_Command_Line_Norm(file_name, Buf);
+
+		StringAdd(result, Buf);
 		StringAdd(result, SPACE_STRING);
 
 		uint Digit = 3;
 		string Decimal = Decimal_To_String(version, Digit);
 
-		StringAdd(result, Get_Command_Line_Norm(Decimal));
+		Get_Command_Line_Norm(Decimal, Buf);
+
+		StringAdd(result, Buf);
 		StringAdd(result, SPACE_STRING);
 
 		string Integer = IntegerToString(line);
 
-		StringAdd(result, Get_Command_Line_Norm(Integer));
+		Get_Command_Line_Norm(Integer, Buf);
 
-		return result;
+		StringAdd(result, Buf);
 	}
 };
 

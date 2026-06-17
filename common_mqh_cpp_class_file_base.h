@@ -12,12 +12,12 @@ protected:
 
 		SECURITY_ATTRIBUTES Atr = {};
 
-		if (__CreateDirectoryW(folder_name, Atr) == 0) {
+		if (_CreateDirectoryW(folder_name, Atr) == 0) {
 
 			SYSTEM_ERROR_VALUE::Set_System_Error(
 
 				CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_ROOT_DRC),
-				__GetWin32LastError(),
+				_GetWin32LastError(),
 				__LINE__,
 				__FILEW__
 			);
@@ -37,24 +37,24 @@ public:
 
 	SAFE_HANDLE File_Handle;
 
-	virtual inline ulong File_Read(const HANDLE& file_handle) {
+	virtual inline ulong File_Read(const HANDLE file_handle) {
 
 		return 0;
 	}
 
-	virtual inline ulong File_Write(const HANDLE& file_handle) {
+	virtual inline ulong File_Write(const HANDLE file_handle) {
 
 		return 0;
 	}
 
-	inline ulong File_Write_Flash(const HANDLE& file_handle) {
+	inline ulong File_Write_Flash(const HANDLE file_handle) {
 
 		if (!FlushFileBuffers(file_handle)) {
 
 			SYSTEM_ERROR_VALUE::Set_System_Error(
 
 				CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_FILE_WRITE_FLASH),
-				__GetWin32LastError(),
+				_GetWin32LastError(),
 				__LINE__,
 				__FILEW__
 			);
@@ -93,14 +93,14 @@ public:
 
 	inline ulong Find_Drc(const string& drc_name, FIND_DATAW& result) {
 
-		HANDLE Drc_Handle = __FindFirstFileW(drc_name, result);
+		HANDLE Drc_Handle = _FindFirstFileW(drc_name, result);
 
 		if (Drc_Handle == INVALID_HANDLE_VALUE) {
 
 			SYSTEM_ERROR_VALUE::Set_System_Error(
 
 				CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_GET_DRC),
-				__GetWin32LastError(),
+				_GetWin32LastError(),
 				__LINE__,
 				__FILEW__
 			);
@@ -116,25 +116,25 @@ public:
 		}
 	}
 
-	virtual ulong Get_Root(const string& file_name, MQH_STRING_VECTOR& result) {
+	virtual ulong Get_Root(const string& file_name, _vector<string>& result) {
 
 		return 0;
 	}
 
-	inline ulong Create_Root(MQH_ARRAY_ARG(string, drc_array), string& top_drc, const int& count) {
+	inline ulong Create_Root(_vector<string>& drc_array, string& top_drc, const int& count) {
 
 		FIND_DATAW Data = {};
 		ulong Error_Code = ERROR_SUCCESS;
 
 		for (int i = 0; i < count; i++) {
 
-			StringAdd(top_drc, drc_array[i]);
+			StringAdd(top_drc, drc_array.Get_At(i));
 
 			Error_Code = Find_Drc(top_drc, Data);
 
 			if (Error_Code != ERROR_SUCCESS) {
 
-				if (__GetWin32LastError() == ERROR_FILE_NOT_FOUND) {
+				if (_GetWin32LastError() == ERROR_FILE_NOT_FOUND) {
 
 					Error_Code = Create_Folder(top_drc);
 
@@ -160,29 +160,21 @@ public:
 			NULL);
 	}
 
-	virtual ulong File_Initialization(const HANDLE& handle) {
+	virtual ulong File_Initialization(const HANDLE handle) {
 
 		return 0;
 	}
 
-	inline ulong Get_File_Size(const HANDLE& file_handle, LARGE_INTEGER& result) {
+	inline ulong Get_File_Size(const HANDLE file_handle, LARGE_INTEGER& result) {
 
-#ifdef COMPILER_FOO_MQH5
-
-		BOOL Success = GetFileSizeEx(file_handle, result.QuadPart);
-#endif
-
-#ifdef COMPILER_FOO_CPP
-
-		BOOL Success = GetFileSizeEx(file_handle, &result);
-#endif
+		BOOL Success = _GetFileSizeEx(file_handle, result);
 
 		if (!Success) {
 
 			SYSTEM_ERROR_VALUE::Set_System_Error(
 
 				CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_GET_FILE_SIZE),
-				__GetWin32LastError(),
+				_GetWin32LastError(),
 				__LINE__,
 				__FILEW__
 			);
