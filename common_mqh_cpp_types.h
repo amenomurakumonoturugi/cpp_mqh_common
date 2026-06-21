@@ -34,6 +34,7 @@ namespace std {
 template<typename T>
 class _vector {
 
+private:
 
 #define _VECTOR_BUF_PTR_NAME Buf_Ptr
 #define _VECTOR_BUF_NAME Buf
@@ -130,8 +131,6 @@ class _vector {
 
 #endif
 
-private:
-
     _VECTOR_TYPE;
     _vector* Owner;
 
@@ -145,6 +144,8 @@ private:
     }
 
 public:
+
+    virtual ~_vector() {}
 
     _VECTOR_COPY_BUF_TYPE(_VECTOR_BUF_PTR_NAME)
 
@@ -175,6 +176,8 @@ public:
     void Set_at(const int index, const T value) {
 
         _VECTOR_SET_AT(_VECTOR_BUF_NAME, index, value);
+
+        Copy_Buf();
     }
 
     T Get_At(const int index) {
