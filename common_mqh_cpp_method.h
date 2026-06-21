@@ -486,4 +486,15 @@ inline ulong CALC_CUSTOM_ERROR_CODE(ulong custom_err) {
 	return custom_err + ERR_USER_ERROR_FIRST;
 }
 
+inline ulong GET_PRIMARY_ERROR_CODE(ulong custom_error, ulong& result) {
+
+	if (custom_error < ERR_USER_ERROR_FIRST)
+		return CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_FILE_READ);
+
+	else
+		result = custom_error - ERR_USER_ERROR_FIRST;
+
+	return ERROR_SUCCESS;
+}
+
 #endif
