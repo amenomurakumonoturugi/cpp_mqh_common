@@ -14,7 +14,6 @@ const uint GENERIC_WRITE = 0x40000000;
 const uint OPEN_ALWAYS = 4;
 const uint FILE_ATTRIBUTE_NORMAL = 0x00000080;
 const uint FILE_BEGIN = 0;
-const uint CPP_MQH_FILE_SHARE_READ = 0x00000001;
 
 const uint LOCKFILE_EXCLUSIVE_LOCK = 0x00000002;
 const uint ERROR_FILE_NOT_FOUND = 2;
@@ -38,8 +37,6 @@ const uint GET_MUTEX_TRIAL_MAX_COUNT = 10;
 const uint GET_MUTEX_TRIAL_SLEEP_MILLI_SEC = 100;
 const uint GET_MUTEX_WAIT_LOCK_MILLI_SEC = 20;
 
-const uint CPP_MQH_FILE_SHARE_READ = FILE_SHARE_READ;
-
 #endif
 
 const string NULL_STRING = _u("");
@@ -56,6 +53,7 @@ const uint TIME_SCALE_MOON_RETOUCH_VALUE = 1;
 
 const uint SLEEP_MILLI_SECOND_VALUE = 10;
 const uint TRY_FILE_LOCK_COUNTER = 10;
+const int  TRY_FIND_COUNTER = 10;
 
 const uint COMMAND_LINE_ASSIGNMENT_NUMBER_EXE_APP_NAME = 0;
 const uint COMMAND_LINE_ASSIGNMENT_NUMBER_CALL_APP_NAME = 1;
@@ -68,5 +66,8 @@ const uint DUMMY_VALUE = 0;
 
 const ulong ULONG_VALUE_FILE_SIZE = sizeof(ulong);
 const ulong MAX_LOG_FILE_SIZE = 2097152;
+
+const uint CPP_MQH_FILE_SHARE_READ = 0x00000001;
+const uint CPP_MQH_FILE_SHARE_WRITE = 0x00000002;
 
 #endif

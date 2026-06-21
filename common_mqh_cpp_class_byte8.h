@@ -213,7 +213,7 @@ public:
 
 			else {
 
-				string App_Data_Drc = "AppData\\Local\\";
+				string App_Data_Drc = "AppData\\Local";
 
 				if (!StringAdd(result, App_Data_Drc)) {
 

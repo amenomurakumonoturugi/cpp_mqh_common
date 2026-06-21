@@ -31,29 +31,18 @@ private:
 
 			return ERROR_SUCCESS;
 		}
-#endif
-
-#ifdef __MQL5__
-
-		int Index = -1;
-		int Found = -1;
-
-		while ((Found = StringFind(file_drc, BACK_SLASH_STRING, Found + 1)) != -1) {
-
-			Index = Found;
-		}
-
-		if (Index != -1) {
-
-			result = StringSubstr(file_drc, Index + 1, -1);
-
-			return ERROR_SUCCESS;
-		}
-#endif
 
 		StringAssign(result, NULL_STRING);
 
 		return CALC_CUSTOM_ERROR_CODE(CUSTOM_ERROR_CODE_FAILED_GET_FILE_NAME);
+#endif
+
+#ifdef __MQL5__
+
+		StringAssign(result, file_drc);
+		
+		return ERROR_SUCCESS;
+#endif
 	}
 
 public:

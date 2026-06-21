@@ -184,7 +184,7 @@ protected:
 
 public:
 
-	inline ulong Byte8_Read(ulong& result, ulong& last_time, const string& file_name, BYTE8_FILE_MANAGER& file_mng) {
+	inline ulong Byte8_Read(ulong& result, ulong& last_time, const string file_name, BYTE8_FILE_MANAGER& file_mng) {
 
 
 		ulong Error_Code = file_mng.Lock_Mng.File_Lock_Only_1();
@@ -198,6 +198,9 @@ public:
 		StringAssign(File_Drc, NULL_STRING);
 
 		Error_Code = Common_Creaate_Root(file_mng, file_name, File_Drc);
+
+		if (Error_Code != ERROR_SUCCESS)
+			return Error_Code;
 
 		LARGE_INTEGER P_Large = {};
 
@@ -234,7 +237,7 @@ public:
 	};
 
 
-	inline ulong Byte8_Write(const ulong& data, const string& file_name, BYTE8_FILE_MANAGER& file_mng) {
+	inline ulong Byte8_Write(const ulong& data, const string file_name, BYTE8_FILE_MANAGER& file_mng) {
 
 		ulong Error_Code = file_mng.Lock_Mng.File_Lock_Only_1();
 
@@ -248,6 +251,9 @@ public:
 
 		Error_Code = Common_Creaate_Root(file_mng, file_name, File_Drc);
 
+		if (Error_Code != ERROR_SUCCESS)
+			return Error_Code;
+
 		LARGE_INTEGER P_Large = {};
 
 		_vector<string> Array;
@@ -256,8 +262,6 @@ public:
 
 		if (Error_Code != ERROR_SUCCESS)
 			return Error_Code;
-
-		file_mng.Set_File_Handle(file_mng.File_Handle.get());
 
 		Error_Code = file_mng.Check_File_Size(ULONG_VALUE_FILE_SIZE, P_Large);
 
@@ -283,6 +287,77 @@ public:
 
 		return ERROR_SUCCESS;
 	};
+};
+
+class COMPOSITION_PROCESS_FLOW {
+
+private:
+
+public:
+
+	ulong Err_Ms_Boot(const string& app_name, const string& file_name, const uint& line, const string& current_drc) {
+
+		PROCESS_MANAGER Process_Mng;
+
+		string Exe_Name, Command_Line;
+
+		_vector<string> Drc_Buf;
+
+		Drc_Buf.push_back(EXE_FOLDER_DRC());
+		Drc_Buf.push_back(MAKER_FOLDER_DRC());
+		Drc_Buf.push_back(ITEM_FOLDER_DRC());
+		Drc_Buf.push_back(ITEM_ERR_MS_FOLDER_DRC());
+
+		Process_Mng.Get_File_Drc(Drc_Buf, Drc_Buf.size(), ITEM_ERR_MS_EXE_NAME(), Exe_Name);
+
+		ulong Error_Code = Process_Mng.Proccess_Boot_File_Exist(Exe_Name);
+
+		if (Error_Code != ERROR_SUCCESS)
+			return Error_Code;
+
+		uint32_t Frag = DETACHED_PROCESS | HIGH_PRIORITY_CLASS;
+
+		Process_Mng.Create_Command_Line(Exe_Name, app_name, file_name, CONTROL_SYSTEM_VERSION, line, Command_Line);
+
+		return Process_Mng.Create_Proccess(
+
+			Exe_Name,
+			Command_Line,
+			Frag,
+			current_drc);
+	}
+
+	ulong Log_Mng_Boot(const string& app_name, const string& file_name, const uint& line, const string& current_drc) {
+
+		PROCESS_MANAGER Process_Mng;
+
+		string Exe_Name, Command_Line;
+
+		_vector<string> Drc_Buf;
+
+		Drc_Buf.push_back(EXE_FOLDER_DRC());
+		Drc_Buf.push_back(MAKER_FOLDER_DRC());
+		Drc_Buf.push_back(ITEM_FOLDER_DRC());
+		Drc_Buf.push_back(ITEM_LOG_FOLDER_DRC());
+
+		Process_Mng.Get_File_Drc(Drc_Buf, Drc_Buf.size(), ITEM_LOG_MNG_EXE_NAME(), Exe_Name);
+
+		ulong Error_Code = Process_Mng.Proccess_Boot_File_Exist(Exe_Name);
+
+		if (Error_Code != ERROR_SUCCESS)
+			return Error_Code;
+
+		uint32_t Frag = DETACHED_PROCESS | HIGH_PRIORITY_CLASS;
+
+		Process_Mng.Create_Command_Line(Exe_Name, app_name, file_name, CONTROL_SYSTEM_VERSION, line, Command_Line);
+
+		return Process_Mng.Create_Proccess(
+
+			Exe_Name,
+			Command_Line,
+			Frag,
+			current_drc);
+	}
 };
 
 #endif
