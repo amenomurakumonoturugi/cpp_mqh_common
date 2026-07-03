@@ -4,7 +4,7 @@
 
 #define COMMON_CLASS_FILE_FLOW_H
 
-class COMPOSITION_FILE_FLOW {
+class FLOW_FILE_CONTROLLER {
 
 protected:
 
@@ -289,7 +289,7 @@ public:
 	};
 };
 
-class COMPOSITION_PROCESS_FLOW {
+class FLOW_PROCESS_CONTROLLER {
 
 private:
 
@@ -317,7 +317,7 @@ public:
 
 		uint32_t Frag = DETACHED_PROCESS | HIGH_PRIORITY_CLASS;
 
-		Process_Mng.Create_Command_Line(Exe_Name, app_name, file_name, CONTROL_SYSTEM_VERSION, line, Command_Line);
+		Process_Mng.Create_Command_Line(Exe_Name, app_name, file_name, SYSTEM_VERSION, line, Command_Line);
 
 		return Process_Mng.Create_Proccess(
 
@@ -349,7 +349,7 @@ public:
 
 		uint32_t Frag = DETACHED_PROCESS | HIGH_PRIORITY_CLASS;
 
-		Process_Mng.Create_Command_Line(Exe_Name, app_name, file_name, CONTROL_SYSTEM_VERSION, line, Command_Line);
+		Process_Mng.Create_Command_Line(Exe_Name, app_name, file_name, SYSTEM_VERSION, line, Command_Line);
 
 		return Process_Mng.Create_Proccess(
 
