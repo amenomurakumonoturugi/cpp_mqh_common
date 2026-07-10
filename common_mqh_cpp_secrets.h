@@ -1,4 +1,4 @@
-//+------------------------------------------------------------------+
+Ôªø//+------------------------------------------------------------------+
 //|                                                                  |
 //| Copyright 2026 amenomurakumonoturugi                             |
 //|                                                                  |
@@ -16,72 +16,230 @@
 //| License.                                                         |
 //+------------------------------------------------------------------+
 
-// ==============================================================================
-//     Åyë„ë÷ópÉ_É~Å[ÉtÉ@ÉCÉã / TEMPLATE & DUMMY FILEÅz
-// ==============================================================================
-// [JP] Ç±ÇÃÉtÉ@ÉCÉãÇÕGitHubåˆäJópÇÃÉäÉ|ÉWÉgÉäë„ë÷ÅiÉ_É~Å[ÅjÉtÉ@ÉCÉãÇ≈Ç∑ÅB
-//      é¿ç€ÇÃä¬ã´ÉpÉXÇ‚É~ÉÖÅ[ÉeÉbÉNÉXñºÇ»Ç«ÇÕÉ_É~Å[ï∂éöóÒÇ…íuä∑Ç≥ÇÍÇƒÇ¢Ç‹Ç∑ÅB
-//      ñ{î‘ä¬ã´Ç≈égópÇ∑ÇÈç€ÇÕÅAé©êgÇÃä¬ã´Ç…çáÇÌÇπÇΩê≥ÇµÇ¢ílÇ…èëÇ´ä∑Ç¶ÇƒÇ≠ÇæÇ≥Ç¢ÅB
-//
-// [EN] This is a dummy template file for public GitHub repository.
-//      Sensitive information (paths, mutex names, etc.) has been replaced with dummies.
-//      Please configure proper values according to your local environment.
-// ==============================================================================
-
 #ifndef COMMON_SECRETS_H
 
 #define COMMON_SECRETS_H
 
-#define SYSTEM_VERSION 1.000
+#define SYSTEM_VERSION 260.710
 
 
+#define INPUT_TIME_INT_SIZE                    3
+struct INPUT_VALUE
+{
+	int               Open1[INPUT_TIME_INT_SIZE];
+	int               Open2[INPUT_TIME_INT_SIZE];
+	int               Close1[INPUT_TIME_INT_SIZE];
+	int               Close2[INPUT_TIME_INT_SIZE];
+	int               If_Nanpin;
+	int               If_Summer;
+	int               Loss_Management;
+	double            Percentage;
+	int               Max_Position;
+	double            Fixed;
+	double            Commission_USD;
+	__int64           Next_Trade;
+	int               Time_Ber;
+	int               Indicator_Type1;
+	int               Indicator_Type2;
+	int               Indicator_Type3;
+	int               Indicator_Type4;
+	int               Indicator_Type5;
+	int               Indicator_Value1;
+	int               Indicator_Value2;
+	int               Indicator_Value3;
+	int               Indicator_Value4;
+	int               Indicator_Value5;
+};
 
-string MUTEX_LOCAL_NAME_SYSTEM_LOG_PROCESS() { return _u("Local\\System_Logger_M"); }
+inline void Binary_To_Array(
+	
+	const ulong& value1,
+	const ulong& value2,
+	const ulong& value3,
+	const ulong& value4,
+	const ulong& value5,
+	const ulong& value6,
+	const ulong& value7,
+	const ulong& value8,
+	_vector<ulong>& result,
+	const int& size) {
 
-string MUTEX_NAME_SERVICE_LOG_PROCESS() { return _u("Local\\Service_Logger_M"); }
+	result.resize(size);
 
-string MUTEX_LOCAL_NAME_ERROR_PROCESS() { return _u("Local\\Error_M"); }
+	result.Set_at(0, value1);
 
-string MAKER_FOLDER_DRC() { return _u("\\maker_Name"); }
+	if (size >= 2) result.Set_at(1, value2);
+	if (size >= 3) result.Set_at(2, value3);
+	if (size >= 4) result.Set_at(3, value4);
+	if (size >= 5) result.Set_at(4, value5);
+	if (size >= 6) result.Set_at(5, value6);
+	if (size >= 7) result.Set_at(6, value7);
+	if (size >= 8) result.Set_at(7, value8);
+}
 
-string ITEM_FOLDER_DRC() { return _u("\\item_name"); }
+inline int Get_Byte2_Binary_Array(const ulong value,const int& size, _vector<ushort>& result,const int& start) {
 
-string EXE_FOLDER_DRC() { return _u("C:\\Program Files"); }
+    for (int i = 0; i < size; i++) {
 
-string ITEM_ERR_MS_ERR_FILE_NAME() { return _u("\\Error_Message.bin"); }
+		ulong temp = value;
 
-string ITEM_ERR_MS_FOLDER_DRC() { return _u("\\Error_Message"); }
+		for (int i = 0; i < size; i++) {
 
-string ITEM_ERR_MS_FILES_FOLDER_DRC() { return _u("\\FILE"); }
+			result.Set_at(start + i, (ushort)(temp & 0xFF));
+			temp >>= 8;
+		}
+    }
 
-string ITEM_ERR_MS_ERR_FILE_DRC() { return _u("\\Error_Message"); }
+	return size + start;
+}
 
-string ITEM_ERR_MS_VISIBLE_ERR_NUM_FILE_NAME() { return _u("\\Visible_Error.bin"); }
+inline void Xor_Decrypt_Byte2_Array(_vector<ushort>& array, const uchar& key) {
 
-string ITEM_ERR_MS_VISIBLE_FILE_DRC() { return _u("\\Visible_Error"); }
+    int Size = array.size();
 
-string ITEM_LANGUAGE_FILE_NAME() { return _u("\\Language.bin"); }
+    for (int i = 0; i < Size; i++) {
 
-string ITEM_LANGUAGE_FOLDER_DRC() { return _u("\\Language"); }
+        // „Éì„ÉÉ„Éà„ÅÆÂèçËª¢„ÄÇÂÖÉ„ÅÆ„Éå„É´ÊñáÂ≠ó(0)„ÇÇÊöóÂè∑ÂåñÔºà0 ^ keyÔºâ„Åï„Çå„Å¶„ÅÑ„Çã„Åü„ÇÅ„ÄÅ
+        // ÈÄî‰∏≠„ÅßBreak„Åõ„Åö„ÄÅÈÖçÂàó„ÅÆÊú´Â∞æ„Åæ„Åß‰∏ÄÊ∞ó„Å´Âæ©Âè∑„Éï„É©„ÉÉ„ÉàÂåñ„Åô„Çã
+        array.Set_at(i, (ushort)(array.Get_At(i) ^ key));
+    }
+}
 
-string ITEM_ERR_MS_EXE_NAME() { return _u("\\Error_Message.exe"); }
+// ÂÖ¨Èñã„Éò„ÉÉ„ÉÄ„Å∏„ÅÆË®òËø∞„ÅßÊñáÂ≠óÂàó„ÅÆÂæ©ÂÖÉ„Å†„Å®„ÅØÂàÜ„Åã„Çâ„Å™„ÅÑ„Çà„ÅÜ„Å´„Ç∑„É≥„Éó„É´„Å™ÂëΩÂêç
+inline string Get_Type_String(
+	
+	const ulong& value1,
+	const int& values_size,
+	const ulong value2 = 0,
+	const ulong value3 = 0,
+	const ulong value4 = 0,
+	const ulong value5 = 0,
+	const ulong value6 = 0,
+	const ulong value7 = 0,
+	const ulong value8 = 0,
+	const uchar key = 0x5A) {
 
-string ITEM_LOG_MNG_EXE_NAME() { return _u("\\Logger.exe"); }
+	int Byte_Size = sizeof(value1);
+	_vector<ulong> Sorce;
+	_vector<ushort> Dst;
 
-string ITEM_LOG_FOLDER_DRC() { return _u("\\log"); }
+	Dst.resize(values_size * Byte_Size);
+	Binary_To_Array(value1, value2, value3, value4, value5, value6, value7, value8, Sorce, values_size);
 
-string TERMINAL_LANGUAGE_JP() { return _u("\\Japanese"); }
+	int Index = 0;
 
-string TERMINAL_LANGUAGE_EN() { return _u("\\English"); }
+	for (int i = 0; i < Sorce.size(); i++) {
+		Index = Get_Byte2_Binary_Array(Sorce.Get_At(i), Byte_Size, Dst, Index);
+	}
 
-string ERR_MS_WINDOW_TITLE() { return _u("error"); }
+	Xor_Decrypt_Byte2_Array(Dst, key);
 
-string ERR_MS_WINDOW_CLASS() { return _u("class_error"); }
+	return ShortArrayToString(Dst);
+}
 
-string ITEM_SYSTEM_LOG_FOLDER_DRC() { return _u("SYSTEM"); }
+// Local\\ReturnSafety_CONTROL_System_Log_Mutex
+#define MUTEX_LOCAL_NAME_SYSTEM_LOG_PROCESS()  Get_Type_String(0x3F0806363B393516, 6, 0x3F3C3B0934282F2E, 0x080E14151905232E, 0x3F2E292309051615, 0x2F17053D35160537, 0x5A5A5A5A5A223F2E)
 
-string ITEM_SYSTEM_CURRENT_LOG_FOLDER_DRC() { return _u("\\CURRENT"); }
+// ReturnSafety_CONTROL_Service_Log_Mutex
+#define MUTEX_NAME_SERVICE_LOG_PROCESS()  Get_Type_String(0x3B0934282F2E3F08, 5, 0x14151905232E3F3C, 0x283F09051615080E, 0x3D3516053F39332C, 0x5A5A223F2E2F1705)
 
-string ITEM_SYSTEM_DAY_LOG_FOLDER_DRC() { return _u("\\DAY_LOG"); }
+// Local\\ReturnSafety_CONTROL_Error_Mutex
+#define MUTEX_LOCAL_NAME_ERROR_PROCESS()  Get_Type_String(0x3F0806363B393516, 5, 0x3F3C3B0934282F2E, 0x080E14151905232E, 0x283528281F051615, 0x5A5A223F2E2F1705)
+
+// \\ReturnSafety
+#define MAKER_FOLDER_DRC()  Get_Type_String(0x0934282F2E3F0806, 2, 0x5A5A5A232E3F3C3B)
+
+// \\CONTROL
+#define ITEM_FOLDER_DRC()  Get_Type_String(0x1615080E14151906, 2, 0x5A5A5A5A5A5A5A5A)
+
+// C:\\Program Files
+#define EXE_FOLDER_DRC()  Get_Type_String(0x283D35280A066019, 3, 0x293F36331C7A373B, 0x5A5A5A5A5A5A5A5A)
+
+// \\err.bin
+#define ITEM_ERR_MS_ERR_FILE_NAME()  Get_Type_String(0x3433387428283F06, 2, 0x5A5A5A5A5A5A5A5A)
+
+// \\err_ms
+#define ITEM_ERR_MS_FOLDER_DRC()  Get_Type_String(0x5A29370528283F06, 1)
+
+// \\files
+#define ITEM_ERR_MS_FILES_FOLDER_DRC()  Get_Type_String(0x5A5A293F36333C06, 1)
+
+// \\err
+#define ITEM_ERR_MS_ERR_FILE_DRC()  Get_Type_String(0x5A5A5A5A28283F06, 1)
+
+// \\vis.bin
+#define ITEM_ERR_MS_VISIBLE_ERR_NUM_FILE_NAME()  Get_Type_String(0x3433387429332C06, 2, 0x5A5A5A5A5A5A5A5A)
+
+// \\vis
+#define ITEM_ERR_MS_VISIBLE_FILE_DRC()  Get_Type_String(0x5A5A5A5A29332C06, 1)
+
+// \\lang.bin
+#define ITEM_LANGUAGE_FILE_NAME()  Get_Type_String(0x3338743D343B3606, 2, 0x5A5A5A5A5A5A5A34)
+
+// \\lang
+#define ITEM_LANGUAGE_FOLDER_DRC()  Get_Type_String(0x5A5A5A3D343B3606, 1)
+
+// \\sl.bin
+#define ITEM_SL_FILE_NAME()  Get_Type_String(0x5A34333874362906, 1)
+
+// \\sl
+#define ITEM_SL_FOLDER_DRC()  Get_Type_String(0x5A5A5A5A5A362906, 1)
+
+// \\err_ms.exe
+#define ITEM_ERR_MS_EXE_NAME()  Get_Type_String(0x7429370528283F06, 2, 0x5A5A5A5A5A3F223F)
+
+// \\log_mng.exe
+#define ITEM_LOG_MNG_EXE_NAME()  Get_Type_String(0x3D3437053D353606, 2, 0x5A5A5A5A3F223F74)
+
+// \\logs
+#define ITEM_LOG_FOLDER_DRC()  Get_Type_String(0x5A5A5A293D353606, 1)
+
+// \\service
+#define ITEM_SERVICE_FOLDER_DRC()  Get_Type_String(0x3F39332C283F2906, 2, 0x5A5A5A5A5A5A5A5A)
+
+// \\directory.log
+#define MT5_DRC_FILE_NAME()  Get_Type_String(0x352E393F28333E06, 2, 0x5A5A3D3536742328)
+
+// \\MT5\\drc
+#define MT5_DRC_FILE_DRC()  Get_Type_String(0x39283E066F0E1706, 2, 0x5A5A5A5A5A5A5A5A)
+
+// \\RuleDefender2.exe
+#define APP_FILE_NAME()  Get_Type_String(0x3C3F1E3F362F0806, 3, 0x3F7468283F3E343F, 0x5A5A5A5A5A5A3F22)
+
+// \\r_d
+#define APP_FILE_DRC()  Get_Type_String(0x5A5A5A5A3E052806, 1)
+
+// \\CONTROL.ex5
+#define EA_FILE_NAME()  Get_Type_String(0x1615080E14151906, 2, 0x5A5A5A5A6F223F74)
+
+// \\CONTROLwatch.exe
+#define WATCH_FILE_NAME()  Get_Type_String(0x1615080E14151906, 3, 0x223F7432392E3B2D, 0x5A5A5A5A5A5A5A3F)
+
+// \\watch
+#define WATCH_FILE_DRC()  Get_Type_String(0x5A5A32392E3B2D06, 1)
+
+// \\Experts
+#define EA_FILE_DRC()  Get_Type_String(0x292E283F2A221F06, 2, 0x5A5A5A5A5A5A5A5A)
+
+// Japanese
+#define TERMINAL_LANGUAGE_JP()  Get_Type_String(0x3F293F343B2A3B10, 2, 0x5A5A5A5A5A5A5A5A)
+
+// English
+#define TERMINAL_LANGUAGE_EN()  Get_Type_String(0x5A322933363D341F, 1)
+
+// CONTROL system error
+#define ERR_MS_WINDOW_TITLE()  Get_Type_String(0x7A1615080E141519, 3, 0x3F7A373F2E292329, 0x5A5A5A5A28352828)
+
+// #32770
+#define ERR_MS_WINDOW_CLASS()  Get_Type_String(0x5A5A6A6D6D686979, 1)
+
+// \\system
+#define ITEM_SYSTEM_LOG_FOLDER_DRC()  Get_Type_String(0x5A373F2E29232906, 1)
+
+// \\current
+#define ITEM_SYSTEM_CURRENT_LOG_FOLDER_DRC()  Get_Type_String(0x2E343F28282F3906, 2, 0x5A5A5A5A5A5A5A5A)
+
+// \\days
+#define ITEM_SYSTEM_DAY_LOG_FOLDER_DRC()  Get_Type_String(0x5A5A5A29233B3E06, 1)
 
 #endif

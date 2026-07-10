@@ -41,7 +41,7 @@
 #include "common_mqh_cpp_class_log_base.h"
 #include "common_mqh_cpp_class_process.h"
 #include "common_mqh_cpp_class_pipe.h"
-#include "common_mqh_cpp_class_file_flow.h"
+#include "common_mqh_cpp_class_flow.h"
 
 #endif
 
@@ -67,6 +67,6 @@ uint RtlGetLastWin32Error(void);
 #include "common_mqh_cpp_class_log_base.mqh"
 #include "common_mqh_cpp_class_process.mqh"
 #include "common_mqh_cpp_class_pipe.mqh"
-#include "common_mqh_cpp_class_file_flow.mqh"
+#include "common_mqh_cpp_class_flow.mqh"
 
 #endif
